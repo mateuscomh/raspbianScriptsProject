@@ -5,19 +5,19 @@
 #-----Importando bibliotecas 
 import RPi.GPIO as GPIO #Lib das GPIO
 import time #Lib temporizador
-import os
+import os #Lib comandos sistema
 
 #----Setup do GPIO, definindo interruptor
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-#-----Temporizador e mensagem wall para todos 
+#-----Temporizador desligamento e mensagem wall
 def Shutdown(channel):
-    print("Shutting Down...")
+    os.system("wall shuting down in 5 secs...")
     time.sleep(5)
     os.system("sudo shutdown -h now")
 
-#----Adicionando eventos de erros para log
+#----Em caso de falha, chamando novamente a função..
 GPIO.add_event_detect(3, GPIO.FALLING, callback=Shutdown, bouncetime=2000)
 while 1:
     time.sleep(1)
