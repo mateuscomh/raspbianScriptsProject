@@ -90,7 +90,8 @@ while True:
     #cmd = "hostname -I | cut -d\' \' -f1"
     cmd = "curl -s ifconfig.me"
     IP = subprocess.check_output(cmd, shell = True )
-    cmd = "top -bn1 | grep load | awk '{printf \"CPU Load: %.2f\", $(NF-2)}'"
+    #cmd = "top -bn1 | grep load | awk '{printf \"CPU Load: %.2f\", $(NF-2)}'"
+    cmd = "uptime  | grep -o 'load.*' | sed s/\ average// | sed s/,\ /\|/g"
     CPU = subprocess.check_output(cmd, shell = True )
     cmd = "free -m | awk 'NR==2{printf \"Mem: %s/%sMB %.2f%%\", $3,$2,$3*100/$2 }'"
     MemUsage = subprocess.check_output(cmd, shell = True )
@@ -98,6 +99,7 @@ while True:
     Disk = subprocess.check_output(cmd, shell = True )
 
     #Escrevendo as 4 linhas da primeira sessao
+
     draw.text((x, top),       IP,  font=font, fill=255)
     draw.text((x, top+8),     CPU, font=font, fill=255)
     draw.text((x, top+16),    MemUsage,  font=font, fill=255)
@@ -112,13 +114,13 @@ while True:
     draw.rectangle((0,0,width,height), outline=0, fill=0)
 
     #Escrevendo as 4 linhas da segunda sessao
-    cmd = "hostname"
+    cmd = "echo Hostname: $(hostname)"
     Hname = subprocess.check_output(cmd, shell = True)
     cmd = "sensors | grep temp | awk '{print \" Temp: \" $2}' | cut -c2-12"
     Temp = subprocess.check_output(cmd, shell = True)
-    cmd = "uptime | awk '{printf \"Uptime: \"$3}'"
+    cmd = "uptime | awk -F' ' '{print \"Uptime: \" $3$4}' | sed s/,//"
     Utime = subprocess.check_output(cmd, shell = True)
-    cmd = "date +%d/%m/%y_%H:%M"
+    cmd = "echo Data: $(date +%d/%m/%y_%H:%M)"
     Date= subprocess.check_output(cmd, shell = True)
 
     #Exibindo a segunda sessao
@@ -130,4 +132,5 @@ while True:
     disp.image(image)
     disp.display()
     time.sleep(10)
-    
+
+  
