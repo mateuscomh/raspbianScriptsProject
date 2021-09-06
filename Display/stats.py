@@ -49,7 +49,7 @@ disp = Adafruit_SSD1306.SSD1306_128_32(rst=RST)
 # Inicializando a biblioteca
 disp.begin()
 
-# Limpando a tela
+# Inicializando display
 disp.clear()
 disp.display()
 
@@ -61,7 +61,7 @@ image = Image.new('1', (width, height))
 draw = ImageDraw.Draw(image)
 draw.rectangle((0,0,width,height), outline=0, fill=0)
 
-# Preparando a tela
+# Preparando variaveis de tela
 padding = -2
 top = padding
 bottom = height-padding
@@ -74,10 +74,6 @@ font_path = '/usr/share/fonts/truetype/piboto/digital-7.mono.ttf'
 font = ImageFont.load_default()
 font2 = ImageFont.truetype(font_path , 24)
 
-# Informacoes de hora e data
-dateString = '%d %B %Y'
-timeString = '%H:%M'
-
 # Função de interrupção para limpeza da tela (trap)
 def kill_signal(signum, frame):
     print("Recebido Control-C")
@@ -86,7 +82,6 @@ def kill_signal(signum, frame):
     sys.exit(0)
 
 # Código em loop com as telas de hora,sistema e status
-# Em breve novas func.
 try:
     while True:
         # Sinais de interrupção chamadno a função kill_signal
@@ -94,22 +89,29 @@ try:
         signal.signal(signal.SIGHUP, kill_signal)
         signal.signal(signal.SIGTERM, kill_signal)
 
-        # Atribuição de hora e data
-        strDate = datetime.datetime.now().strftime(dateString)
-        result  = datetime.datetime.now().strftime(timeString)
+        i = 1
+        while i < 10:
+            # Variavel hora
+            timeString = '%H:%M:%S'
+            dateString = '%a %d %b %Y'
 
-        # "Limpando" a tela preenchendo com fundo preto
-        draw.rectangle((0,0,width,height), outline=0, fill=0)
+            # Atribuição de hora e data
+            strDate = datetime.datetime.now().strftime(dateString)
+            result  = datetime.datetime.now().strftime(timeString)
 
-        # Texto de data em duas linhas.
-        draw.text((x+13,top),strDate, font=font,fill=255)
-        draw.text((x+35, top+16), result,  font=font2, fill=255)
-        draw.line((0, top+12, 127, top+12), fill=100)
+            # "Limpando" a tela preenchendo com fundo preto
+            draw.rectangle((0,0,width,height), outline=0, fill=0)
 
-        # Exibindo a imagem com timer.
-        disp.image(image)
-        disp.display()
-        time.sleep(25)
+            # Texto de data em duas linhas.
+            draw.text((x+22, top),strDate, font=font,fill=255)
+            draw.text((x+22, top+16), result,  font=font2, fill=255)
+            draw.line((0, top+12, 127, top+12), fill=100)
+
+            # Exibindo a imagem com timer.
+            disp.image(image)
+            disp.display()
+            time.sleep(3.5)
+            i = i + 1
 
         draw.rectangle((0,0,width,height), outline=0, fill=0)
 
@@ -125,34 +127,34 @@ try:
         Disk = subprocess.check_output(cmd, shell = True )
 
         # Escrevendo as 4 linhas da primeira sessao
-        draw.text((x, top),       "IP: " + str(IP,'utf-8'),  font=font, fill=255)
+        draw.text((x, top),       "IP: " + str(IP, 'utf-8'),  font=font, fill=255)
         draw.text((x, top+8),     "Load: " + str(CPU, 'utf-8'), font=font, fill=255)
         draw.text((x, top+16),    MemUsage,  font=font, fill=255)
         draw.text((x, top+25),    Disk,  font=font, fill=255)
 
         # Exibindo as primeira sessao
         disp.image(image)
-        disp.display()
+       disp.display()
         time.sleep(7)
 
         # Limpa tela para segunda sessao
         draw.rectangle((0,0,width,height), outline=0, fill=0)
 
         # Escrevendo as 4 linhas da segunda sessao
-        cmd = "echo Hostname: $(hostname)"
+        cmd = "echo $(hostname)"
         Hname = subprocess.check_output(cmd, shell = True)
         cmd = "vcgencmd measure_temp |cut -f 2 -d '='"
         Temp = subprocess.check_output(cmd, shell = True)
-        cmd = "uptime | awk -F' ' '{print \"Uptime: \" $3}' | sed s/,//"
+        cmd = "uptime | awk -F'( |,|:)+' '{d=h=m=0; if ($7==\"min\") m=$6; else {if ($7~/^day/) {d=$6;h=$8;m=$9} else {h=$6;m=$7}}} {print h+0,\"hr:\",m+0,\"min\"}'"
         Utime = subprocess.check_output(cmd, shell = True)
         cmd = "vnstat | grep today | awk '{print \"D:\"$2$3 \" | U:\" $5$6}'| sed s/iB//g"
         Nwork = subprocess.check_output(cmd, shell = True)
 
         # Exibindo as info da proxima tela
-        draw.text((x, top),       Hname,  font=font, fill=255)
-        draw.text((x, top+8),     "Temp: " + str(Temp,'utf-8'),  font=font, fill=255)
-        draw.text((x, top+16),    Utime,  font=font, fill=255)
-        draw.text((x, top+25),    Nwork,    font=font, fill=255)
+        draw.text((x, top),       "Hostname: " + str(Hname, 'utf-8'), font=font, fill=255)
+        draw.text((x, top+8),     "Temp: " + str(Temp, 'utf-8'),  font=font, fill=255)
+        draw.text((x, top+16),    "Uptime: " + str(Utime, 'utf-8'),  font=font, fill=255)
+        draw.text((x, top+25),    str(Nwork, 'utf-8'), font=font, fill=255)
 
         disp.image(image)
         disp.display()
