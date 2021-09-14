@@ -116,45 +116,45 @@ try:
         draw.rectangle((0,0,width,height), outline=0, fill=0)
 
         #cmd = "hostname -I | cut -d\' \' -f1"
+        cmd = "echo $(hostname)"
+        Hname = subprocess.check_output(cmd, shell = True)
         cmd = "curl -s ifconfig.me"
         IP = subprocess.check_output(cmd, shell = True )
         #cmd = "top -bn1 | grep load | awk '{printf \"CPU Load: %.2f\", $(NF-2)}'"
-        cmd = "uptime  | grep -o 'load.*' | sed s/\ average// | sed s/,\ /\|/g | sed s/load:\ //"
-        CPU = subprocess.check_output(cmd, shell = True )
-        cmd = "free -m | awk 'NR==2{printf \"Mem: %s/%sMB %.2f%%\", $3,$2,$3*100/$2 }'"
-        MemUsage = subprocess.check_output(cmd, shell = True )
-        cmd = "df -h | awk '$NF==\"/\"{printf \"Disk: %d/%dGB %s\", $3,$2,$5}'"
-        Disk = subprocess.check_output(cmd, shell = True )
+        cmd = "uptime | awk -F'( |,|:)+' '{d=h=m=0; if ($7==\"min\") m=$6; else {if ($7~/^day/) {d=$6;h=$8;m=$9} else {h=$6;m=$7}}} {print h+0,\"hr:\",m+0,\"min\"}'"
+        Utime = subprocess.check_output(cmd, shell = True)
+        cmd = "vnstat | grep today | awk '{print \"D:\"$2$3 \" | U:\" $5$6}'| sed s/iB//g"
+        Nwork = subprocess.check_output(cmd, shell = True)
 
         # Escrevendo as 4 linhas da primeira sessao
-        draw.text((x, top),       "IP: " + str(IP, 'utf-8'),  font=font, fill=255)
-        draw.text((x, top+8),     "Load: " + str(CPU, 'utf-8'), font=font, fill=255)
-        draw.text((x, top+16),    MemUsage,  font=font, fill=255)
-        draw.text((x, top+25),    Disk,  font=font, fill=255)
+        draw.text((x, top),       "Hostname: " + str(Hname, 'utf-8'), font=font, fill=255)
+        draw.text((x, top+8),     "IP: " + str(IP, 'utf-8'),  font=font, fill=255)
+        draw.text((x, top+16),    "Uptime: " + str(Utime, 'utf-8'),  font=font, fill=255)
+        draw.text((x, top+25),    str(Nwork, 'utf-8'), font=font, fill=255)
 
         # Exibindo as primeira sessao
         disp.image(image)
-       disp.display()
+        disp.display()
         time.sleep(7)
 
         # Limpa tela para segunda sessao
         draw.rectangle((0,0,width,height), outline=0, fill=0)
 
         # Escrevendo as 4 linhas da segunda sessao
-        cmd = "echo $(hostname)"
-        Hname = subprocess.check_output(cmd, shell = True)
+        cmd = "uptime  | grep -o 'load.*' | sed s/\ average// | sed s/,\ /\|/g | sed s/load:\ //"
+        CPU = subprocess.check_output(cmd, shell = True )
         cmd = "vcgencmd measure_temp |cut -f 2 -d '='"
         Temp = subprocess.check_output(cmd, shell = True)
-        cmd = "uptime | awk -F'( |,|:)+' '{d=h=m=0; if ($7==\"min\") m=$6; else {if ($7~/^day/) {d=$6;h=$8;m=$9} else {h=$6;m=$7}}} {print h+0,\"hr:\",m+0,\"min\"}'"
-        Utime = subprocess.check_output(cmd, shell = True)
-        cmd = "vnstat | grep today | awk '{print \"D:\"$2$3 \" | U:\" $5$6}'| sed s/iB//g"
-        Nwork = subprocess.check_output(cmd, shell = True)
+        cmd = "free -m | awk 'NR==2{printf \"Mem: %s/%sMB %.2f%%\", $3,$2,$3*100/$2 }'"
+        MemUsage = subprocess.check_output(cmd, shell = True )
+        cmd = "df -h | awk '$NF==\"/\"{printf \"Disk: %d/%dGB %s\", $3,$2,$5}'"
+        Disk = subprocess.check_output(cmd, shell = True )
 
         # Exibindo as info da proxima tela
-        draw.text((x, top),       "Hostname: " + str(Hname, 'utf-8'), font=font, fill=255)
+        draw.text((x, top),     "Load: " + str(CPU, 'utf-8'), font=font, fill=255)
         draw.text((x, top+8),     "Temp: " + str(Temp, 'utf-8'),  font=font, fill=255)
-        draw.text((x, top+16),    "Uptime: " + str(Utime, 'utf-8'),  font=font, fill=255)
-        draw.text((x, top+25),    str(Nwork, 'utf-8'), font=font, fill=255)
+        draw.text((x, top+16),    MemUsage,  font=font, fill=255)
+        draw.text((x, top+25),    Disk,  font=font, fill=255)
 
         disp.image(image)
         disp.display()
