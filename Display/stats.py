@@ -74,6 +74,10 @@ font_path = '/usr/share/fonts/truetype/piboto/digital-7.mono.ttf'
 font = ImageFont.load_default()
 font2 = ImageFont.truetype(font_path , 24)
 
+# Variável de ip externo
+cmd = "echo $(curl -s ifconfig.me) > /tmp/ip.tmp && cat /tmp/ip.tmp || echo 0.0.0.0"
+IP = subprocess.check_output(cmd, shell = True )
+
 # Função de interrupção para limpeza da tela (trap)
 def kill_signal(signum, frame):
     print("Recebido Control-C")
@@ -90,7 +94,7 @@ try:
         signal.signal(signal.SIGTERM, kill_signal)
 
         i = 1
-        while i < 10:
+        while i < 20:
             # Variavel hora
             timeString = '%H:%M:%S'
             dateString = '%a %d %b %Y'
@@ -110,7 +114,7 @@ try:
             # Exibindo a imagem com timer.
             disp.image(image)
             disp.display()
-            time.sleep(3.5)
+            time.sleep(2)
             i = i + 1
 
         draw.rectangle((0,0,width,height), outline=0, fill=0)
@@ -118,8 +122,6 @@ try:
         #cmd = "hostname -I | cut -d\' \' -f1"
         cmd = "echo $(hostname)"
         Hname = subprocess.check_output(cmd, shell = True)
-        cmd = "curl -s ifconfig.me"
-        IP = subprocess.check_output(cmd, shell = True )
         #cmd = "top -bn1 | grep load | awk '{printf \"CPU Load: %.2f\", $(NF-2)}'"
         cmd = "uptime | awk -F'( |,|:)+' '{d=h=m=0; if ($7==\"min\") m=$6; else {if ($7~/^day/) {d=$6;h=$8;m=$9} else {h=$6;m=$7}}} {print h+0,\"hr:\",m+0,\"min\"}'"
         Utime = subprocess.check_output(cmd, shell = True)
