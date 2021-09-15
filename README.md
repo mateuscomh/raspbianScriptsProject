@@ -1,2 +1,5 @@
 # RaspPython
-Scripts para automação e testes na Raspberry Pi
+
+
+Repositório de scripts e programas na configuração/automação da raspberry pi atendida pelo nome de **Morpheus**
+
