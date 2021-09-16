@@ -75,7 +75,7 @@ font = ImageFont.load_default()
 font2 = ImageFont.truetype(font_path , 24)
 
 # Variável de ip externo
-cmd = "echo $(curl -s ifconfig.me) > /tmp/ip.tmp && cat /tmp/ip.tmp || echo 0.0.0.0"
+cmd = "echo $(curl -s ifconfig.me) > /tmp/ip.tmp && cat /tmp/ip.tmp"
 IP = subprocess.check_output(cmd, shell = True )
 
 # Função de interrupção para limpeza da tela (trap)
@@ -94,7 +94,7 @@ try:
         signal.signal(signal.SIGTERM, kill_signal)
 
         i = 1
-        while i < 20:
+        while i < 17:
             # Variavel hora
             timeString = '%H:%M:%S'
             dateString = '%a %d %b %Y'
@@ -137,11 +137,11 @@ try:
         # Exibindo as primeira sessao
         disp.image(image)
         disp.display()
-        time.sleep(7)
+        time.sleep(9)
 
         # Limpa tela para segunda sessao
         draw.rectangle((0,0,width,height), outline=0, fill=0)
-
+        
         # Escrevendo as 4 linhas da segunda sessao
         cmd = "uptime  | grep -o 'load.*' | sed s/\ average// | sed s/,\ /\|/g | sed s/load:\ //"
         CPU = subprocess.check_output(cmd, shell = True )
@@ -160,7 +160,7 @@ try:
 
         disp.image(image)
         disp.display()
-        time.sleep(7)
+        time.sleep(9)
 
 except (KeyboardInterrupt, SystemError, InterruptedError, SystemExit): # Se houver interrupcao de control+c sai do programa limpando a tela
     print("Display limpo!")
