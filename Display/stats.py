@@ -21,6 +21,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+#Requisitos repositório Debian:
+#curl, vnstat(configurador com as interface), vcgencmd
+
 # Importando as bibliotecas
 import time
 import sys
@@ -169,7 +172,7 @@ try:
         Disk = subprocess.check_output(cmd, shell = True )
 
         # Exibindo as info da proxima tela
-        draw.text((x, top),     "Load: " + str(CPU, 'utf-8'), font=font, fill=255)
+        draw.text((x, top),       "Load: " + str(CPU, 'utf-8'), font=font, fill=255)
         draw.text((x, top+8),     "Temp: " + str(Temp, 'utf-8'),  font=font, fill=255)
         draw.text((x, top+16),    MemUsage,  font=font, fill=255)
         draw.text((x, top+25),    Disk,  font=font, fill=255)
