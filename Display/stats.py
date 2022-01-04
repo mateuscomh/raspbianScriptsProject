@@ -21,17 +21,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-#Requisitos repositório Debian:
-#curl, vnstat(configurador com as interface), vcgencmd
-
 # Importando as bibliotecas
 import time
-import sys 
+import sys
 import signal
 import datetime
 import os
 
-import Adafruit_GPIO.SPI as SPI 
+import Adafruit_GPIO.SPI as SPI
 import Adafruit_SSD1306
 
 from PIL import Image
@@ -40,12 +37,12 @@ from PIL import ImageFont
 
 import subprocess
 
-# Confkguracao dos pinos da Raspberry Pi 
-RST = None     
+# Confkguracao dos pinos da Raspberry Pi
+RST = None
 # Apenas no modo SPI para ser usado
 DC = 23
-SPI_PORT = 0 
-SPI_DEVICE = 0 
+SPI_PORT = 0
+SPI_DEVICE = 0
 
 disp = Adafruit_SSD1306.SSD1306_128_32(rst=RST)
 
@@ -69,7 +66,7 @@ padding = -2
 top = padding
 bottom = height-padding
 # Move o sinalizador para o canto esquerdo para iniciar escrita
-x = 0 
+x = 0
 
 # Carregando as fontes para projeto
 ## Outras fontes podem ser obtidas em http://www.datafont.com/bitmap.php
@@ -78,7 +75,7 @@ font = ImageFont.load_default()
 font2 = ImageFont.truetype(font_path , 24)
 
 # Variável de ip externo
-cmd = "echo $(curl -s ifconfig.me) > /tmp/ip.tmp && cat /tmp/ip.tmp"
+cmd = "echo $(hostname -I | awk '{print $1}') > /tmp/ip.tmp && cat /tmp/ip.tmp"
 IP = subprocess.check_output(cmd, shell = True )
 
 # Função de interrupção para limpeza da tela (trap)
@@ -97,7 +94,7 @@ try:
         signal.signal(signal.SIGTERM, kill_signal)
 
         i = 1
-        while i < 17:
+        while i < 25:
             # Variavel hora
             timeString = '%H:%M:%S'
             dateString = '%a %d %b %Y'
@@ -117,9 +114,25 @@ try:
             # Exibindo a imagem com timer.
             disp.image(image)
             disp.display()
-            time.sleep(2)
+            time.sleep(1)
             i = i + 1
 
+        #Informacoes Clima
+        cmd = "curl -s  v2n.wttr.in | grep Weather: | awk '{print $4 \" \" $5 }'"
+        clima = subprocess.check_output(cmd, shell = True)
+
+        #Texto em duas linhas
+        draw.rectangle((0,0,width,height), outline=0, fill=0)
+        draw.text((x+50, top),"CLIMA", font=font,fill=255)
+        draw.text((x+1, top+16), str (clima, 'utf-8'), font=font2, fill=255)
+        draw.line((0, top+12, 127, top+12), fill=100)
+
+        #Exibindo informações na tela
+        disp.image(image)
+        disp.display()
+        time.sleep(10)
+
+        #Limpa tela
         draw.rectangle((0,0,width,height), outline=0, fill=0)
 
         #cmd = "hostname -I | cut -d\' \' -f1"
@@ -140,11 +153,11 @@ try:
         # Exibindo as primeira sessao
         disp.image(image)
         disp.display()
-        time.sleep(9)
+        time.sleep(10)
 
         # Limpa tela para segunda sessao
         draw.rectangle((0,0,width,height), outline=0, fill=0)
-        
+
         # Escrevendo as 4 linhas da segunda sessao
         cmd = "uptime  | grep -o 'load.*' | sed s/\ average// | sed s/,\ /\|/g | sed s/load:\ //"
         CPU = subprocess.check_output(cmd, shell = True )
@@ -156,14 +169,14 @@ try:
         Disk = subprocess.check_output(cmd, shell = True )
 
         # Exibindo as info da proxima tela
-        draw.text((x, top),       "Load: " + str(CPU, 'utf-8'), font=font, fill=255)
+        draw.text((x, top),     "Load: " + str(CPU, 'utf-8'), font=font, fill=255)
         draw.text((x, top+8),     "Temp: " + str(Temp, 'utf-8'),  font=font, fill=255)
         draw.text((x, top+16),    MemUsage,  font=font, fill=255)
         draw.text((x, top+25),    Disk,  font=font, fill=255)
 
         disp.image(image)
         disp.display()
-        time.sleep(9)
+        time.sleep(10)
 
 except (KeyboardInterrupt, SystemError, InterruptedError, SystemExit): # Se houver interrupcao de control+c sai do programa limpando a tela
     print("Display limpo!")
