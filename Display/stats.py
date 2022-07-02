@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 # Copyright (c) 2017 Adafruit Industries
-# Author: Tony DiCola & James DeVito
 # Modified : Matheus Martins
+# Author: Tony DiCola & James DeVito
+
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -10,28 +11,15 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
-
-#Requisitos repositório Debian:
-#curl, vnstat(configurador com as interface), vcgencmd
 
 # Importando as bibliotecas
 import time
-import sys
+import sys 
 import signal
 import datetime
 import os
 
-import Adafruit_GPIO.SPI as SPI
+import Adafruit_GPIO.SPI as SPI 
 import Adafruit_SSD1306
 
 from PIL import Image
@@ -40,12 +28,12 @@ from PIL import ImageFont
 
 import subprocess
 
-# Confkguracao dos pinos da Raspberry Pi
-RST = None
+# Configuracao dos pinos da Raspberry Pi 
+RST = None     
 # Apenas no modo SPI para ser usado
 DC = 23
-SPI_PORT = 0
-SPI_DEVICE = 0
+SPI_PORT = 0 
+SPI_DEVICE = 0 
 
 disp = Adafruit_SSD1306.SSD1306_128_32(rst=RST)
 
@@ -69,7 +57,7 @@ padding = -2
 top = padding
 bottom = height-padding
 # Move o sinalizador para o canto esquerdo para iniciar escrita
-x = 0
+x = 0 
 
 # Carregando as fontes para projeto
 ## Outras fontes podem ser obtidas em http://www.datafont.com/bitmap.php
@@ -78,7 +66,8 @@ font = ImageFont.load_default()
 font2 = ImageFont.truetype(font_path , 24)
 
 # Variável de ip externo
-cmd = "echo $(hostname -I | awk '{print $1}') > /tmp/ip.tmp && cat /tmp/ip.tmp"
+cmd = "echo $(curl -s ifconfig.me) > /tmp/ip.tmp && cat /tmp/ip.tmp"
+#cmd = "echo $(hostname -I | awk '{print $1}') > /tmp/ip.tmp && cat /tmp/ip.tmp"
 IP = subprocess.check_output(cmd, shell = True )
 
 # Função de interrupção para limpeza da tela (trap)
@@ -97,7 +86,7 @@ try:
         signal.signal(signal.SIGTERM, kill_signal)
 
         i = 1
-        while i < 25:
+        while i < 35:
             # Variavel hora
             timeString = '%H:%M:%S'
             dateString = '%a %d %b %Y'
@@ -120,29 +109,13 @@ try:
             time.sleep(1)
             i = i + 1
 
-        #Informacoes Clima
-        cmd = "curl -s  v2n.wttr.in | grep Weather: | awk '{print $4 \" \" $5 }'"
-        clima = subprocess.check_output(cmd, shell = True)
-
-        #Texto em duas linhas
+        # Limpa tela para segunda sessao
         draw.rectangle((0,0,width,height), outline=0, fill=0)
-        draw.text((x+50, top),"CLIMA", font=font,fill=255)
-        draw.text((x+1, top+16), str (clima, 'utf-8'), font=font2, fill=255)
-        draw.line((0, top+12, 127, top+12), fill=100)
-
-        #Exibindo informações na tela
-        disp.image(image)
-        disp.display()
-        time.sleep(10)
-
-        #Limpa tela
-        draw.rectangle((0,0,width,height), outline=0, fill=0)
-
         #cmd = "hostname -I | cut -d\' \' -f1"
         cmd = "echo $(hostname)"
         Hname = subprocess.check_output(cmd, shell = True)
         #cmd = "top -bn1 | grep load | awk '{printf \"CPU Load: %.2f\", $(NF-2)}'"
-        cmd = "uptime | awk -F'( |,|:)+' '{d=h=m=0; if ($7==\"min\") m=$6; else {if ($7~/^day/) {d=$6;h=$8;m=$9} else {h=$6;m=$7}}} {print h+0,\"hr:\",m+0,\"min\"}'"
+        cmd = "uptime | awk -F'( |,|:)+' '{d=h=m=0; if ($7==\"min\") m=$6; else {if ($7~/^day/) {d=$6;h=$8;m=$9} else {h=$6;m=$7}}} {print d+0,\"d\",h+0,\"h:\",m+0,\"m\"}'"
         Utime = subprocess.check_output(cmd, shell = True)
         cmd = "vnstat | grep today | awk '{print \"D:\"$2$3 \" | U:\" $5$6}'| sed s/iB//g"
         Nwork = subprocess.check_output(cmd, shell = True)
@@ -172,7 +145,7 @@ try:
         Disk = subprocess.check_output(cmd, shell = True )
 
         # Exibindo as info da proxima tela
-        draw.text((x, top),       "Load: " + str(CPU, 'utf-8'), font=font, fill=255)
+        draw.text((x, top),     "Load: " + str(CPU, 'utf-8'), font=font, fill=255)
         draw.text((x, top+8),     "Temp: " + str(Temp, 'utf-8'),  font=font, fill=255)
         draw.text((x, top+16),    MemUsage,  font=font, fill=255)
         draw.text((x, top+25),    Disk,  font=font, fill=255)
@@ -180,8 +153,9 @@ try:
         disp.image(image)
         disp.display()
         time.sleep(10)
-
-except (KeyboardInterrupt, SystemError, InterruptedError, SystemExit): # Se houver interrupcao de control+c sai do programa limpando a tela
+ 
+# Se houver interrupcao de control+c sai do programa limpando a tela
+except (KeyboardInterrupt, SystemError, InterruptedError, SystemExit):
     print("Display limpo!")
     draw.rectangle((0,0,width,height), outline=0, fill=0)
     exit()
