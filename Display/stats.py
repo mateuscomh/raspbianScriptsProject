@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 # Copyright (c) 2017 Adafruit Industries
-# Modified : Matheus Martins
 # Author: Tony DiCola & James DeVito
-
+# Modified : Matheus Martins
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -11,6 +10,16 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
 # Importando as bibliotecas
 import time
@@ -28,7 +37,7 @@ from PIL import ImageFont
 
 import subprocess
 
-# Configuracao dos pinos da Raspberry Pi 
+# Confkguracao dos pinos da Raspberry Pi 
 RST = None     
 # Apenas no modo SPI para ser usado
 DC = 23
@@ -115,7 +124,8 @@ try:
         cmd = "echo $(hostname)"
         Hname = subprocess.check_output(cmd, shell = True)
         #cmd = "top -bn1 | grep load | awk '{printf \"CPU Load: %.2f\", $(NF-2)}'"
-        cmd = "uptime | awk -F'( |,|:)+' '{d=h=m=0; if ($7==\"min\") m=$6; else {if ($7~/^day/) {d=$6;h=$8;m=$9} else {h=$6;m=$7}}} {print d+0,\"d\",h+0,\"h:\",m+0,\"m\"}'"
+        cmd = "uptime | awk -F'( |,|:)+' '{d=h=m=0; if ($7==\"min\") m=$6; \
+            else {if($7~/^day/) {d=$6;h=$8;m=$9} else {h=$6;m=$7}}} {print d+0\"d\",h+0\"h:\"m+0\"m\"}'"
         Utime = subprocess.check_output(cmd, shell = True)
         cmd = "vnstat | grep today | awk '{print \"D:\"$2$3 \" | U:\" $5$6}'| sed s/iB//g"
         Nwork = subprocess.check_output(cmd, shell = True)
@@ -153,9 +163,8 @@ try:
         disp.image(image)
         disp.display()
         time.sleep(10)
- 
-# Se houver interrupcao de control+c sai do programa limpando a tela
-except (KeyboardInterrupt, SystemError, InterruptedError, SystemExit):
+
+except (KeyboardInterrupt, SystemError, InterruptedError, SystemExit): # Se houver interrupcao de control+c sai do programa limpando a tela
     print("Display limpo!")
     draw.rectangle((0,0,width,height), outline=0, fill=0)
     exit()
