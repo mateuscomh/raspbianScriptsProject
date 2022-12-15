@@ -133,7 +133,7 @@ try:
 
         # Escrevendo as 4 linhas da primeira sessao
         draw.text((x, top),       "Hostname: " + str(Hname, 'utf-8'), font=font, fill=255)
-        draw.text((x, top+8),     "IP: " + str(IP, 'utf-8'),  font=font, fill=255)
+        draw.text((x, top+8),     "IP: " + str(IP),  font=font, fill=255)
         draw.text((x, top+16),    "Uptime: " + str(Utime, 'utf-8'),  font=font, fill=255)
         draw.text((x, top+25),    str(Nwork, 'utf-8'), font=font, fill=255)
 
