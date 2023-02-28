@@ -23,12 +23,13 @@
 
 # Importando as bibliotecas
 import time
-import sys 
+import sys
+import subprocess
 import signal
 import datetime
 import os
 
-import Adafruit_GPIO.SPI as SPI 
+import Adafruit_GPIO.SPI as SPI
 import Adafruit_SSD1306
 
 from PIL import Image
@@ -37,12 +38,12 @@ from PIL import ImageFont
 
 import subprocess
 
-# Confkguracao dos pinos da Raspberry Pi 
-RST = None     
+# Confkguracao dos pinos da Raspberry Pi
+RST = None
 # Apenas no modo SPI para ser usado
 DC = 23
-SPI_PORT = 0 
-SPI_DEVICE = 0 
+SPI_PORT = 0
+SPI_DEVICE = 0
 
 disp = Adafruit_SSD1306.SSD1306_128_32(rst=RST)
 
@@ -67,7 +68,7 @@ padding = -2
 top = padding
 bottom = height-padding
 # Move o sinalizador para o canto esquerdo para iniciar escrita
-x = 0 
+x = 0
 
 # Carregando as fontes para projeto
 ## Outras fontes podem ser obtidas em http://www.datafont.com/bitmap.php
@@ -76,9 +77,9 @@ font = ImageFont.load_default()
 font2 = ImageFont.truetype(font_path , 24)
 
 # Variável de ip externo
-IP = os.popen('curl -s ifconfig.me').readline()
-#cmd = "echo $(curl -s ifconfig.me)" 
-#IP = subprocess.check_output(cmd, shell = True )
+#IP = os.popen('curl -s ifconfig.me').readline()
+result = subprocess.run(['curl', '-s', 'ifconfig.me'], stdout=subprocess.PIPE)
+IP = result.stdout.decode('utf-8').strip()
 
 # Função de interrupção para limpeza da tela (trap)
 def kill_signal(signum, frame):
@@ -100,25 +101,25 @@ try:
             # Variavel hora
             timeString = '%H:%M:%S'
             dateString = '%a %d %b %Y'
-    
+
             # Atribuição de hora e data
             strDate = datetime.datetime.now().strftime(dateString)
             result  = datetime.datetime.now().strftime(timeString)
-    
+
             # "Limpando" a tela preenchendo com fundo preto
             _clrscr()
-    
+
             # Texto de data em duas linhas.
             draw.text((x+22, top),strDate, font=font,fill=255)
             draw.text((x+22, top+16), result,  font=font2, fill=255)
             draw.line((0, top+12, 127, top+12), fill=100)
-    
+
             # Exibindo a imagem com timer.
             disp.image(image)
             disp.display()
             time.sleep(1)
             i = i + 1
-    
+
         # Limpa tela para segunda sessao
         _clrscr()
         #cmd = "hostname -I | cut -d\' \' -f1"
