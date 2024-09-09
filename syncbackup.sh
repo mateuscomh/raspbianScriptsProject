@@ -1,15 +1,59 @@
+
 #!/bin/bash
-ponto_montagem="/mnt/Orico01S"
-#docker stop $(docker ps -a -q) && sleep 5
-if grep -qs "$ponto_montagem" /proc/mounts; then
-    systemctl stop docker && sleep 5
-    rsync -Cravztp /ORIG /DEST
+
+set -e  # Para o script se qualquer comando falhar
+
+# Variáveis
+SOURCE_PATH="/containers"
+DEST_PATH="/mnt/Orico01S/Django/Variados/Backup"
+MOUNT_POINT="/mnt/Orico01S"
+RESTIC_PATH="/mnt/ResticBackup/containers"
+PASSWORD_FILE="/scripts/password"
+LOG_FILE="/tmp/bkpcontainers"
+VNSTAT_SOURCE="/var/lib/vnstat"
+VNSTAT_DEST="$DEST_PATH/vnstat"
+MAIL_RECIPIENT="modengo"
+
+# Função para verificar se um comando existe
+function check_command {
+    command -v "$1" &>/dev/null || { echo "Erro: comando $1 não encontrado."; exit 1; }
+}
+
+# Função para parar e iniciar Docker
+function manage_docker {
+    local action=$1
+    systemctl "$action" docker
     sleep 5
-    rsync -Cravztp /ORIGvnsta /DEST
-    sleep 15
-    systemctl start docker
+}
+
+# Verificar se os comandos essenciais estão disponíveis
+check_command rsync
+check_command restic
+check_command systemctl
+
+# Parar Docker
+manage_docker stop
+
+# Verificar se o ponto de montagem está acessível
+if grep -qs "$MOUNT_POINT" /proc/mounts; then
+    # Sincronizar os containers e vnstat
+    rsync -Cravzp "$SOURCE_PATH" "$DEST_PATH" | tee "$LOG_FILE"
+    restic -r "$RESTIC_PATH" --password-file "$PASSWORD_FILE" backup "$SOURCE_PATH" | tee -a "$LOG_FILE"
+    restic -r "$RESTIC_PATH" --password-file "$PASSWORD_FILE" check | tee -a "$LOG_FILE"
+    restic forget --password-file "$PASSWORD_FILE" --keep-last 10 -r "$RESTIC_PATH" | tee -a "$LOG_FILE"
+    restic prune -r "$RESTIC_PATH" --password-file "$PASSWORD_FILE" | tee -a "$LOG_FILE"
+    date +"%H:%M:%S - %d/%m/%Y" | tee -a "$LOG_FILE"
+
+    # Sincronizar os dados do vnstat
+    rsync -Cravzp "$VNSTAT_SOURCE" "$VNSTAT_DEST" | tee -a "$LOG_FILE"
+    date +"%H:%M:%S - %d/%m/%Y" | tee -a "$LOG_FILE"
 else
-    echo "A pasta não está acessível."
-    echo "Assunto: Ponto de montagem $ponto_montagem nao montado" | /usr/bin/mail -s "Ponto de montagem não está pronto" $USER
+    echo "A pasta não está acessível." | tee "$LOG_FILE"
+    date +"%H:%M:%S - %d/%m/%Y" | tee -a "$LOG_FILE"
+    echo "Assunto: Ponto de montagem $MOUNT_POINT nao montado" | /usr/bin/mail -s "Ponto de montagem $MOUNT_POINT não está pronto" "$MAIL_RECIPIENT"
+    restic -r "$RESTIC_PATH" --password-file "$PASSWORD_FILE" backup "$SOURCE_PATH" | tee -a "$LOG_FILE"
     exit 1
 fi
+
+# Iniciar Docker
+manage_docker start
